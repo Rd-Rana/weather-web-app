@@ -11,24 +11,36 @@ getWeatherBtn.addEventListener("click", () => {
     if (validateInputField(city)) {
         let url = `${apiObject.baseUrl}?q=${city}&appid=${apiObject.apiKey}`;
         // console.log(url);
-        fetch(url)
-        .then(response => {
-            // console.log("then with response");
-            // console.log(response);
-            return response.json();
-        })
-        .then(data => {
-            // console.log("then with actual data");
-            // console.log(data);
-            extractData(data);
-        })
-        .catch(() => {
-            // console.log("in catch");
-            outputSection.style.display = "inline-block";
-            outputSection.innerHTML = `<p><strong>Internet connection lost or something went wrong!</strong></p>`;
-        });
+        // fetch(url)
+        //     .then(response => {
+        //         // console.log("then with response");
+        //         // console.log(response);
+        //         return response.json();
+        //     })
+        //     .then(data => {
+        //         // console.log("then with actual data");
+        //         // console.log(data);
+        //         extractData(data);
+        //     })
+        //     .catch(() => {
+        //         // console.log("in catch");
+        //         outputSection.style.display = "inline-block";
+        //         outputSection.innerHTML = `<p><strong>Internet connection lost or something went wrong!</strong></p>`;
+        //     });
+        callWeatherAPI(url);
     }
 });
+
+async function callWeatherAPI(url) {
+    try {
+        let response = await fetch(url);
+        let data = await response.json();
+        extractData(data);
+    } catch (error) {
+        outputSection.style.display = "inline-block";
+        outputSection.innerHTML = `<p><strong>Internet connection lost or something went wrong!</strong></p>`;
+    }
+}
 
 function validateInputField(city) {
     if (city.trim() == "") {
@@ -53,9 +65,10 @@ function extractData(data) {
                 outputSection.style.display = "inline-block";
                 outputSection.innerHTML = `<p><strong>${data.message}.</strong></p>`;
                 break;
-            
+
             case 200:
                 let cityName = data.name;
+                let country =  data.sys.country;
                 let temp = convertKelvinToCelcius(data.main.temp);
                 let minTemp = convertKelvinToCelcius(data.main.temp_min);
                 let maxTemp = convertKelvinToCelcius(data.main.temp_max);
@@ -65,8 +78,8 @@ function extractData(data) {
                 let iconUrl = `https://openweathermap.org/img/wn/${weatherIcon}@2x.png`;
                 outputSection.style.display = "inline-block";
                 outputSection.innerHTML =
-                `<div>
-                    <h2>Weather in ${cityName}</h2>
+                    `<div>
+                    <h2>Weather in ${cityName}, ${country}</h2>
                     <img src="${iconUrl}" alt="${weatherDesc}" />
                     <p><strong>Temperature:</strong> ${temp} &deg;C</p>
                     <p><strong>Min. Temperature:</strong> ${minTemp} &deg;C</p>
@@ -76,7 +89,7 @@ function extractData(data) {
                 </div>`;
                 // console.log(`City: ${cityName}, Temperature: ${temp} C, Weather: ${weather}, Description: ${weatherDesc}`);
                 break;
-        
+
             default:
                 // console.log("in default section");
                 break;
